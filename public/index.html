@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Operyx - Atendimento</title>
+
+  <style>
+    :root {
+      --primary: #25d366;
+      --primary-soft: #e7fce8;
+      --primary-border: #bdecc0;
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --line: #dfe3e8;
+      --muted: #667781;
+      --chat-bg: #efeae2;
+      --msg-out: #d9fdd3;
+      --msg-in: #ffffff;
+      --msg-bot: #fff3cd;
+      --msg-sys: #f8f9fa;
+      --danger: #c62828;
+      --warn: #8a5a00;
+      --shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: #111b21;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); font-size: 12px; }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 14px;
+      gap: 12px;
+    }
+
+    .topbar, .card, .chat-panel, .right-panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      flex-shrink: 0;
+    }
+
+    .topbar-left, .topbar-right, .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .brand-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.2;
+    }
+
+    .badge, .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #d8dde3;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .badge.ok {
+      background: var(--primary-soft);
+      border-color: var(--primary-border);
+      color: #128c7e;
+    }
+
+    .card { padding: 12px; }
+
+    .login-wrap {
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .field {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input, button, select, textarea {
+      font-family: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d7db;
+      border-radius: 10px;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 211, 102, .12);
+    }
+
+    button {
+      padding: 9px 12px;
+      border: 1px solid #cfd6dd;
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    button:hover { background: #f6f7f8; }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(.96);
+    }
+
+    .btn-soft {
+      background: var(--primary-soft);
+      border-color: var(--primary-border);
+      color: #128c7e;
+    }
+
+    #appBox {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+      gap: 12px;
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 330px 1fr 320px;
+      gap: 12px;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-head {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e4e7eb;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .filter-btn {
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+
+    .filter-btn.active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: #128c7e;
+      font-weight: 700;
+    }
+
+    .sidebar-list {
+      overflow-y: auto;
+      min-height: 0;
+      flex: 1;
+      padding-right: 4px;
+    }
+
+    .conversation-item {
+      border: 1px solid #e4e7eb;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background: #fff;
+      transition: .18s ease;
+    }
+
+    .conversation-item:hover { background: #f8f9fa; }
+    .conversation-item.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary) inset;
+      background: #eefaf2;
+    }
+
+    .conv-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .conv-name { font-weight: 700; font-size: 15px; }
+    .conv-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+    .conv-preview {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .conv-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-nao_atendido {
+      background: #fff7e6;
+      border-color: #ffe0a3;
+      color: var(--warn);
+    }
+
+    .status-em_atendimento {
+      background: var(--primary-soft);
+      border-color: var(--primary-border);
+      color: #128c7e;
+    }
+
+    .status-finalizado {
+      background: #f3f4f5;
+      border-color: #d8dde3;
+      color: var(--muted);
+    }
+
+    .tag-orcamento {
+      background: #eaf2ff;
+      color: #0b66ff;
+      border-color: #bcd3ff;
+    }
+
+    .tag-financeiro {
+      background: #fff0f0;
+      color: var(--danger);
+      border-color: #ffc5c5;
+    }
+
+    .tag-acompanhar_pedido {
+      background: #eefbf0;
+      color: #2e7d32;
+      border-color: #bfe6c4;
+    }
+
+    .tag-triagem {
+      background: #f3f3f3;
+      color: #555;
+    }
+
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--chat-bg);
+      position: relative;
+    }
+
+    .chat-header {
+      background: #f0f2f5;
+      border-bottom: 1px solid #dde2e6;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+    }
+
+    .chat-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+
+    .chat-header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chat-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 14px;
+      background: linear-gradient(rgba(239,234,226,.96), rgba(239,234,226,.96));
+    }
+
+    .messages {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .day-separator {
+      align-self: center;
+      background: #d9fdd3;
+      color: #54656f;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      box-shadow: 0 1px 1px rgba(0,0,0,.08);
+      margin: 8px 0;
+    }
+
+    .msg-row {
+      display: flex;
+      width: 100%;
+    }
+
+    .msg-row.cliente { justify-content: flex-start; }
+    .msg-row.bot,
+    .msg-row.atendente,
+    .msg-row.sistema { justify-content: flex-end; }
+
+    .msg {
+      max-width: min(72%, 440px);
+      padding: 7px 11px 6px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.35;
+      box-shadow: 0 1px 1px rgba(0,0,0,.06);
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .msg.cliente {
+      background: #f1f1f1;
+      border-radius: 12px;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.atendente {
+      background: var(--msg-out);
+      border-radius: 12px;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.bot {
+      background: var(--msg-bot);
+      border: 1px solid #f0dc97;
+      border-top-right-radius: 4px;
+    }
+
+    .msg.sistema {
+      background: var(--msg-sys);
+      border: 1px solid #e3e6e8;
+      border-top-right-radius: 4px;
+    }
+
+    .msg-meta {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .chat-footer {
+      background: #f0f2f5;
+      border-top: 1px solid #dde2e6;
+      padding: 10px 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+    }
+
+    .chat-footer input { border-radius: 999px; }
+    .composer-btn { min-width: 44px; border-radius: 999px; }
+
+    .empty-state {
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .right-section {
+      border: 1px solid #e4e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .right-section h3 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+    }
+
+    .right-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .obs-box {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      background: #fff;
+      box-shadow: var(--shadow);
+      max-width: 360px;
+      z-index: 1200;
+    }
+
+    .toast-title { font-weight: 700; margin-bottom: 4px; }
+    .toast-msg { font-size: 13px; color: #333; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.18);
+      z-index: 1500;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 100%);
+      height: 100vh;
+      background: #fff;
+      border-left: 1px solid var(--line);
+      box-shadow: -12px 0 40px rgba(0,0,0,.12);
+      z-index: 1600;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer-header, .drawer-footer {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drawer-footer {
+      border-top: 1px solid var(--line);
+      border-bottom: none;
+      margin-top: auto;
+    }
+
+    .drawer-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .drawer-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .drawer-result {
+      background: #f8f9fa;
+      border: 1px solid #e4e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1200px) {
+      .main-layout {
+        grid-template-columns: 320px 1fr;
+      }
+      .right-panel {
+        display: none;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        min-height: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="brand-wrap">
+          <img
+            id="logoEmpresa"
+            class="brand-logo"
+            src="https://via.placeholder.com/88x88.png?text=Logo"
+            alt="Logo da empresa"
+          />
+          <div class="brand-lines">
+            <div class="brand-title">Operyx</div>
+            <div class="brand-subtitle" id="nomeEmpresa">Atendimento da empresa</div>
+          </div>
+        </div>
+        <span class="badge ok" id="serverBadge">servidor OK</span>
+        <span class="badge hidden" id="autoBadge">auto: ON</span>
+      </div>
+      <div class="topbar-right">
+        <span class="muted" id="userInfo">não logado</span>
+        <button class="hidden" id="btnLogout">Sair</button>
+      </div>
+    </div>
+
+    <div id="loginBox" class="card login-wrap">
+      <h3 style="margin-top:0;">Login</h3>
+      <div class="row">
+        <div class="field">
+          <label>Usuário</label>
+          <input id="loginUser" placeholder="ex.: erick" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input id="loginPass" type="password" placeholder="ex.: 1234" autocomplete="current-password" />
+        </div>
+        <div style="width:180px; display:flex; align-items:end;">
+          <button id="btnLogin" style="width:100%;">Entrar</button>
+        </div>
+      </div>
+      <div id="loginMsg" class="muted" style="margin-top:10px;"></div>
+      <div class="muted" style="margin-top:10px;">
+        Usuários do MVP: <b>erick</b>, <b>rafaella</b>, <b>financeiro</b> — senha: <b>1234</b>
+      </div>
+    </div>
+
+    <div id="appBox" class="hidden">
+      <div class="card">
+        <div class="row">
+          <div class="field" style="min-width:180px;">
+            <label>Seu nome</label>
+            <input id="nomeAtendente" placeholder="Seu nome" />
+          </div>
+          <div class="field" style="min-width:220px;">
+            <label>Cliente</label>
+            <input id="cliente" placeholder="Cliente (ex.: Luana - 93...)" />
+          </div>
+          <div class="field" style="min-width:280px; flex:2;">
+            <label>Mensagem inicial</label>
+            <input id="mensagem" placeholder="Mensagem (ex.: Quero orçamento...)" />
+          </div>
+          <div style="width:180px; display:flex; align-items:end;">
+            <button id="btnCriar" style="width:100%;">Criar atendimento</button>
+          </div>
+          <div style="width:140px; display:flex; align-items:end;">
+            <button id="btnAtualizar" style="width:100%;">Atualizar</button>
+          </div>
+          <div style="width:140px; display:flex; align-items:end;">
+            <button id="btnAuto" style="width:100%;">Auto: OFF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-layout">
+        <div class="sidebar card">
+          <div class="sidebar-head">
+            <div class="sidebar-topline">
+              <div class="sidebar-title">Conversas</div>
+              <div class="muted">Total: <b id="countTotal">0</b></div>
+            </div>
+            <input id="buscaCliente" placeholder="Buscar cliente..." />
+            <div class="filter-row">
+              <button class="filter-btn active" id="filterTodos">Todos</button>
+              <button class="filter-btn" id="filterNao">Não atendido (<b id="countNao">0</b>)</button>
+              <button class="filter-btn" id="filterEm">Em atendimento (<b id="countEm">0</b>)</button>
+              <button class="filter-btn" id="filterFin">Finalizado (<b id="countFin">0</b>)</button>
+            </div>
+          </div>
+          <div class="sidebar-list" id="listaConversas"></div>
+        </div>
+
+        <div class="chat-panel">
+          <div class="chat-header">
+            <div>
+              <div class="chat-title" id="chatCliente">Selecione um atendimento</div>
+              <div class="muted" id="chatSubinfo">Nenhuma conversa aberta</div>
+            </div>
+            <div class="chat-header-actions">
+              <button id="btnOrcamento" class="btn-soft">Gerar orçamento</button>
+              <button id="btnFinalizarTopo">Finalizar atendimento</button>
+              <div id="chatTagWrap"></div>
+            </div>
+          </div>
+          <div class="chat-body" id="chatHistorico">
+            <div class="messages" id="chatMensagens">
+              <div class="empty-state">Clique em um atendimento para abrir a conversa.</div>
+            </div>
+          </div>
+          <div class="chat-footer">
+            <input id="chatMensagem" placeholder="Digite uma mensagem..." />
+            <button class="composer-btn" id="btnEnviarChat">➤</button>
+          </div>
+        </div>
+
+        <div class="right-panel" id="painelDireito">
+          <div class="right-section">
+            <h3>Cliente</h3>
+            <div id="clienteInfo" class="muted">-</div>
+          </div>
+
+          <div class="right-section">
+            <h3>Atendimento</h3>
+            <div id="atendimentoInfo" class="muted">-</div>
+          </div>
+
+          <div class="right-section">
+            <h3>Tags</h3>
+            <div id="tagsInfo" class="muted">-</div>
+          </div>
+
+          <div class="right-section">
+            <h3>Ações</h3>
+            <div class="right-actions">
+              <button id="btnOrcamentoSide" class="btn-primary">Gerar orçamento</button>
+              <button id="btnPedidoSide">Criar pedido</button>
+            </div>
+          </div>
+
+          <div class="right-section">
+            <h3>Observações</h3>
+            <textarea id="obsInterna" class="obs-box" placeholder="Anotações internas..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast">
+    <div class="toast-title" id="toastTitle">OK</div>
+    <div class="toast-msg" id="toastMsg">...</div>
+  </div>
+
+  <div id="orcamentoBackdrop" class="drawer-backdrop hidden"></div>
+  <div id="orcamentoDrawer" class="drawer hidden">
+    <div class="drawer-header">
+      <div class="drawer-title">Novo orçamento</div>
+      <button id="btnFecharDrawer">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="muted" id="orcClienteInfo">Cliente: -</div>
+
+      <label>Precisa de nota fiscal?</label>
+      <select id="orcNotaFiscal">
+        <option value="">Selecione</option>
+        <option value="sim">Sim</option>
+        <option value="nao">Não</option>
+      </select>
+
+      <label>Produto base</label>
+      <select id="orcProdutoBase">
+        <option value="">Selecione</option>
+        <option value="lona">Lona</option>
+        <option value="adesivo">Adesivo</option>
+        <option value="letra_caixa">Letra Caixa</option>
+        <option value="fachada_acm">Fachada ACM</option>
+      </select>
+
+      <label>Variação do produto</label>
+      <select id="orcVariacao">
+        <option value="">Selecione o produto base primeiro</option>
+      </select>
+
+      <div class="drawer-grid">
+        <div>
+          <label>Largura (m)</label>
+          <input id="orcLargura" type="number" step="0.01" min="0" placeholder="0,00">
+        </div>
+        <div>
+          <label>Altura (m)</label>
+          <input id="orcAltura" type="number" step="0.01" min="0" placeholder="0,00">
+        </div>
+      </div>
+
+      <label>Quantidade</label>
+      <input id="orcQuantidade" type="number" min="1" step="1" value="1">
+
+      <div class="drawer-result">
+        <div><strong>Valor final:</strong> <span id="orcValorFinal">R$ 0,00</span></div>
+        <div><strong>Prazo estimado:</strong> <span id="orcPrazo">--</span></div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button id="btnCalcularOrcamento">Calcular</button>
+      <button id="btnAprovarOrcamento" class="btn-primary">Aprovar</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginBox = document.getElementById("loginBox");
+      const appBox = document.getElementById("appBox");
+      const userInfo = document.getElementById("userInfo");
+      const btnLogout = document.getElementById("btnLogout");
+      const loginUser = document.getElementById("loginUser");
+      const loginPass = document.getElementById("loginPass");
+      const btnLogin = document.getElementById("btnLogin");
+      const loginMsg = document.getElementById("loginMsg");
+      const nomeAtendente = document.getElementById("nomeAtendente");
+      const cliente = document.getElementById("cliente");
+      const mensagem = document.getElementById("mensagem");
+      const btnCriar = document.getElementById("btnCriar");
+      const btnAtualizar = document.getElementById("btnAtualizar");
+      const btnAuto = document.getElementById("btnAuto");
+      const listaConversas = document.getElementById("listaConversas");
+      const countTotal = document.getElementById("countTotal");
+      const countNao = document.getElementById("countNao");
+      const countEm = document.getElementById("countEm");
+      const countFin = document.getElementById("countFin");
+      const filterTodos = document.getElementById("filterTodos");
+      const filterNao = document.getElementById("filterNao");
+      const filterEm = document.getElementById("filterEm");
+      const filterFin = document.getElementById("filterFin");
+      const buscaCliente = document.getElementById("buscaCliente");
+      const chatCliente = document.getElementById("chatCliente");
+      const chatSubinfo = document.getElementById("chatSubinfo");
+      const chatMensagens = document.getElementById("chatMensagens");
+      const chatHistorico = document.getElementById("chatHistorico");
+      const chatMensagem = document.getElementById("chatMensagem");
+      const btnEnviarChat = document.getElementById("btnEnviarChat");
+      const chatTagWrap = document.getElementById("chatTagWrap");
+      const autoBadge = document.getElementById("autoBadge");
+      const toast = document.getElementById("toast");
+      const toastTitle = document.getElementById("toastTitle");
+      const toastMsg = document.getElementById("toastMsg");
+      const clienteInfo = document.getElementById("clienteInfo");
+      const atendimentoInfo = document.getElementById("atendimentoInfo");
+      const tagsInfo = document.getElementById("tagsInfo");
+      const btnOrcamento = document.getElementById("btnOrcamento");
+      const btnOrcamentoSide = document.getElementById("btnOrcamentoSide");
+      const btnPedidoSide = document.getElementById("btnPedidoSide");
+      const btnFinalizarTopo = document.getElementById("btnFinalizarTopo");
+
+      const drawer = document.getElementById("orcamentoDrawer");
+      const drawerBackdrop = document.getElementById("orcamentoBackdrop");
+      const btnFecharDrawer = document.getElementById("btnFecharDrawer");
+      const orcClienteInfo = document.getElementById("orcClienteInfo");
+      const orcNotaFiscal = document.getElementById("orcNotaFiscal");
+      const orcProdutoBase = document.getElementById("orcProdutoBase");
+      const orcVariacao = document.getElementById("orcVariacao");
+      const orcLargura = document.getElementById("orcLargura");
+      const orcAltura = document.getElementById("orcAltura");
+      const orcQuantidade = document.getElementById("orcQuantidade");
+      const orcValorFinal = document.getElementById("orcValorFinal");
+      const orcPrazo = document.getElementById("orcPrazo");
+      const btnCalcularOrcamento = document.getElementById("btnCalcularOrcamento");
+      const btnAprovarOrcamento = document.getElementById("btnAprovarOrcamento");
+
+      let ME = null;
+      let autoOn = false;
+      let autoTimer = null;
+      let filtroAtual = "todos";
+      let buscaAtual = "";
+      let atendimentoSelecionadoId = null;
+      let cacheAtendimentos = [];
+      let cacheMensagens = [];
+
+      const variacoesPorProduto = {
+        lona: [
+          { value: "lona_ilhos", label: "Lona com ilhós" },
+          { value: "lona_bastao_barbante", label: "Lona com bastão e barbante" }
+        ],
+        adesivo: [
+          { value: "adesivo_impressao", label: "Adesivo impressão" },
+          { value: "adesivo_recorte", label: "Adesivo recorte" }
+        ],
+        letra_caixa: [
+          { value: "letra_pvc", label: "Letra caixa PVC" },
+          { value: "letra_acm", label: "Letra caixa ACM" }
+        ],
+        fachada_acm: [
+          { value: "fachada_sem_estrutura", label: "Fachada ACM sem estrutura" },
+          { value: "fachada_com_estrutura", label: "Fachada ACM com estrutura" }
+        ]
+      };
+
+      function showToast(title, msg, kind = "ok") {
+        toastTitle.textContent = title;
+        toastMsg.textContent = msg;
+        toast.style.borderColor = kind === "bad" ? "#ffb3b3" : kind === "warn" ? "#ffe0a3" : "#b3ffb3";
+        toast.classList.remove("hidden");
+        setTimeout(() => toast.classList.add("hidden"), 2200);
+      }
+
+      function esc(s) {
+        return String(s ?? "").replace(/[&<>"']/g, m => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[m]));
+      }
+
+      function humanTag(tagIds) {
+        if (!Array.isArray(tagIds) || !tagIds.length) return "Triagem";
+        return "Tag";
+      }
+
+      function tagClass(tagIds) {
+        if (!Array.isArray(tagIds) || !tagIds.length) return "tag-triagem";
+        return "tag-orcamento";
+      }
+
+      function parseRole(origem) {
+        if (origem === "cliente") return "cliente";
+        if (origem === "bot") return "bot";
+        if (origem === "atendente") return "atendente";
+        return "sistema";
+      }
+
+      function formatHora(data) {
+        const d = new Date(data);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      }
+
+      function formatDiaLabel(data) {
+        const d = new Date(data);
+        if (Number.isNaN(d.getTime())) return "";
+
+        const hoje = new Date();
+        const ontem = new Date();
+        ontem.setDate(hoje.getDate() - 1);
+
+        const sameDay = (a, b) =>
+          a.getDate() === b.getDate() &&
+          a.getMonth() === b.getMonth() &&
+          a.getFullYear() === b.getFullYear();
+
+        if (sameDay(d, hoje)) return "Hoje";
+        if (sameDay(d, ontem)) return "Ontem";
+        return d.toLocaleDateString("pt-BR");
+      }
+
+      function formatMoney(value) {
+        return Number(value || 0).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
+      }
+
+      async function api(path, options = {}) {
+        const res = await fetch(path, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          },
+          credentials: "include"
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          const msg = data?.erro || data?.message || `Erro HTTP ${res.status}`;
+          const err = new Error(msg);
+          err.status = res.status;
+          err.data = data;
+          throw err;
+        }
+
+        return data;
+      }
+
+      async function checkMe() {
+        try {
+          const data = await api("/api/auth/me");
+          return data.user;
+        } catch {
+          return null;
+        }
+      }
+
+      async function doLogin() {
+        const username = loginUser.value.trim();
+        const password = loginPass.value.trim();
+        loginMsg.textContent = "";
+
+        try {
+          const data = await api("/api/login", {
+            method: "POST",
+            body: JSON.stringify({ username, password })
+          });
+
+          ME = data.user;
+          startApp();
+          showToast("Login", "Bem-vindo ao Operyx.");
+        } catch (e) {
+          loginMsg.textContent = "❌ " + e.message;
+        }
+      }
+
+      async function doLogout() {
+        try {
+          await api("/api/auth/logout", { method: "POST" });
+        } catch {}
+
+        ME = null;
+        stopAuto();
+        loginBox.classList.remove("hidden");
+        appBox.classList.add("hidden");
+        btnLogout.classList.add("hidden");
+        userInfo.textContent = "não logado";
+        atendimentoSelecionadoId = null;
+        cacheAtendimentos = [];
+        cacheMensagens = [];
+        renderChat(null, []);
+        renderRightPanel(null);
+      }
+
+      function applyRoleRules() {
+        userInfo.textContent = `logado: ${ME.name} (@${ME.username}) | role: ${ME.role}`;
+        btnLogout.classList.remove("hidden");
+        nomeAtendente.value = ME.name;
+      }
+
+      function startApp() {
+        loginBox.classList.add("hidden");
+        appBox.classList.remove("hidden");
+        applyRoleRules();
+        carregar();
+      }
+
+      function startAuto() {
+        autoOn = true;
+        btnAuto.textContent = "Auto: ON";
+        autoBadge.classList.remove("hidden");
+        if (autoTimer) clearInterval(autoTimer);
+        autoTimer = setInterval(carregar, 2000);
+      }
+
+      function stopAuto() {
+        autoOn = false;
+        btnAuto.textContent = "Auto: OFF";
+        autoBadge.classList.add("hidden");
+        if (autoTimer) clearInterval(autoTimer);
+        autoTimer = null;
+      }
+
+      function toggleAuto() {
+        autoOn ? stopAuto() : startAuto();
+      }
+
+      function setFiltro(novoFiltro) {
+        filtroAtual = novoFiltro;
+        [filterTodos, filterNao, filterEm, filterFin].forEach(btn => btn.classList.remove("active"));
+        if (novoFiltro === "todos") filterTodos.classList.add("active");
+        if (novoFiltro === "nao_atendido") filterNao.classList.add("active");
+        if (novoFiltro === "em_atendimento") filterEm.classList.add("active");
+        if (novoFiltro === "finalizado") filterFin.classList.add("active");
+        renderLista(cacheAtendimentos);
+      }
+
+      async function carregar() {
+        try {
+          const lista = await api("/api/atendimentos");
+          cacheAtendimentos = lista;
+          renderLista(lista);
+
+          if (atendimentoSelecionadoId) {
+            const aindaExiste = lista.find(a => a.id === atendimentoSelecionadoId);
+            if (aindaExiste) {
+              await abrirChatPorId(atendimentoSelecionadoId, false);
+            } else {
+              atendimentoSelecionadoId = null;
+              renderChat(null, []);
+              renderRightPanel(null);
+            }
+          }
+        } catch (e) {
+          showToast("Erro", e.message, "bad");
+        }
+      }
+
+      function renderLista(lista) {
+        const totalNao = lista.filter(a => a.status === "nao_atendido").length;
+        const totalEm = lista.filter(a => a.status === "em_atendimento").length;
+        const totalFin = lista.filter(a => a.status === "finalizado").length;
+
+        countTotal.textContent = lista.length;
+        countNao.textContent = totalNao;
+        countEm.textContent = totalEm;
+        countFin.textContent = totalFin;
+
+        let filtrada = lista;
+        if (filtroAtual !== "todos") filtrada = filtrada.filter(a => a.status === filtroAtual);
+        if (buscaAtual.trim()) {
+          const termo = buscaAtual.trim().toLowerCase();
+          filtrada = filtrada.filter(a => String(a?.cliente?.nome || "").toLowerCase().includes(termo));
+        }
+
+        listaConversas.innerHTML = "";
+        if (!filtrada.length) {
+          listaConversas.innerHTML = `<div class="muted">Nenhuma conversa neste filtro.</div>`;
+          return;
+        }
+
+        filtrada.forEach(a => listaConversas.appendChild(cardAtendimento(a)));
+      }
+
+      function cardAtendimento(a) {
+        const div = document.createElement("div");
+        div.className = "conversation-item";
+        if (a.id === atendimentoSelecionadoId) div.classList.add("active");
+
+        const clienteNome = a?.cliente?.nome || "Cliente";
+        const preview = a?.ultimaMensagem?.conteudo || "Sem mensagens";
+        const hora = a?.ultimaMensagem?.created_at ? formatHora(a.ultimaMensagem.created_at) : "";
+        const atendente = a.atendente_nome || "-";
+
+        div.innerHTML = `
+          <div class="conv-top">
+            <div class="conv-name">${esc(clienteNome)}</div>
+            <div class="conv-time">${esc(hora)}</div>
+          </div>
+          <div class="conv-preview">${esc(preview)}</div>
+          <div>
+            <span class="pill ${tagClass(a.tag_ids)}">${humanTag(a.tag_ids)}</span>
+            <span class="pill status-${esc(a.status)}">${esc(a.status)}</span>
+          </div>
+          <div class="muted" style="margin-top:8px;">
+            ${esc(a.canal || "-")} • ${esc(atendente)} • ${esc(a.protocolo || "-")}
+          </div>
+          <div class="conv-actions" id="actions-${a.id}"></div>
+        `;
+
+        div.addEventListener("click", () => abrirChatPorId(a.id, true));
+        const actions = div.querySelector(`#actions-${a.id}`);
+
+        if (a.status === "nao_atendido") {
+          actions.appendChild(makeBtn("Assumir", async (ev) => {
+            ev.stopPropagation();
+            try {
+              await api(`/api/atendimentos/${a.id}/assumir`, {
+                method: "POST",
+                body: JSON.stringify({
+                  atendente_id: ME?.id || null,
+                  atendente_nome: nomeAtendente.value.trim() || ME?.name || "Atendente"
+                })
+              });
+              showToast("Atendimento", "Você assumiu esse atendimento.");
+              await carregar();
+              await abrirChatPorId(a.id, true);
+            } catch (e) {
+              showToast("Erro", e.message, "bad");
+            }
+          }));
+        }
+
+        if (a.status === "em_atendimento") {
+          actions.appendChild(makeBtn("Finalizar", async (ev) => {
+            ev.stopPropagation();
+            await api(`/api/atendimentos/${a.id}/finalizar`, { method: "POST" });
+            await carregar();
+            await abrirChatPorId(a.id, true);
+          }));
+
+          actions.appendChild(makeBtn("Liberar", async (ev) => {
+            ev.stopPropagation();
+            await api(`/api/atendimentos/${a.id}/liberar`, { method: "POST" });
+            await carregar();
+            await abrirChatPorId(a.id, true);
+          }));
+        }
+
+        return div;
+      }
+
+      function makeBtn(text, onClick) {
+        const btn = document.createElement("button");
+        btn.textContent = text;
+        btn.addEventListener("click", onClick);
+        return btn;
+      }
+
+      async function abrirChatPorId(id, scrollBottom = true) {
+        atendimentoSelecionadoId = id;
+        const atendimento = cacheAtendimentos.find(a => a.id === id);
+        if (!atendimento) return;
+
+        try {
+          const mensagens = await api(`/api/mensagens/${id}`);
+          cacheMensagens = mensagens;
+          renderLista(cacheAtendimentos);
+          renderChat(atendimento, mensagens, scrollBottom);
+          renderRightPanel(atendimento);
+          preencherDrawer(atendimento);
+        } catch (e) {
+          showToast("Erro", e.message, "bad");
+        }
+      }
+
+      function renderRightPanel(atendimento) {
+        if (!atendimento) {
+          clienteInfo.innerHTML = '<span class="muted">-</span>';
+          atendimentoInfo.innerHTML = '<span class="muted">-</span>';
+          tagsInfo.innerHTML = '<span class="muted">-</span>';
+          return;
+        }
+
+        clienteInfo.innerHTML = `
+          <div><strong>${esc(atendimento?.cliente?.nome || "-")}</strong></div>
+          <div class="muted">${esc(atendimento?.cliente?.telefone || "Telefone não informado")}</div>
+        `;
+
+        atendimentoInfo.innerHTML = `
+          <div><strong>Status:</strong> ${esc(atendimento.status || "-")}</div>
+          <div><strong>Atendente:</strong> ${esc(atendimento.atendente_nome || "-")}</div>
+          <div><strong>Protocolo:</strong> ${esc(atendimento.protocolo || "-")}</div>
+          <div><strong>Canal:</strong> ${esc(atendimento.canal || "-")}</div>
+        `;
+
+        tagsInfo.innerHTML = `<span class="pill ${tagClass(atendimento.tag_ids)}">${humanTag(atendimento.tag_ids)}</span>`;
+      }
+
+      function renderChat(atendimento, mensagens = [], scrollBottom = true) {
+        if (!atendimento) {
+          chatCliente.textContent = "Selecione um atendimento";
+          chatSubinfo.textContent = "Nenhuma conversa aberta";
+          chatTagWrap.innerHTML = "";
+          chatMensagens.innerHTML = `<div class="empty-state">Clique em um atendimento para abrir a conversa.</div>`;
+          return;
+        }
+
+        chatCliente.textContent = `${atendimento?.cliente?.nome || "Cliente"} (${atendimento.canal || "-"})`;
+        chatSubinfo.textContent = `Status: ${atendimento.status} | Atendente: ${atendimento.atendente_nome || "-"}`;
+        chatTagWrap.innerHTML = `<span class="pill ${tagClass(atendimento.tag_ids)}">${humanTag(atendimento.tag_ids)}</span>`;
+        chatMensagens.innerHTML = "";
+
+        if (!mensagens.length) {
+          chatMensagens.innerHTML = `<div class="empty-state">Sem mensagens nesta conversa.</div>`;
+          return;
+        }
+
+        let ultimoDia = "";
+        mensagens.forEach(m => {
+          const diaAtual = formatDiaLabel(m.created_at);
+          if (diaAtual !== ultimoDia) {
+            ultimoDia = diaAtual;
+            const sep = document.createElement("div");
+            sep.className = "day-separator";
+            sep.textContent = diaAtual;
+            chatMensagens.appendChild(sep);
+          }
+
+          const row = document.createElement("div");
+          const role = parseRole(m.origem);
+          row.className = `msg-row ${role}`;
+
+          const msg = document.createElement("div");
+          msg.className = `msg ${role}`;
+          msg.innerHTML = `
+            <div>${esc(m.conteudo || "")}</div>
+            <div class="msg-meta">${esc(formatHora(m.created_at))}</div>
+          `;
+
+          row.appendChild(msg);
+          chatMensagens.appendChild(row);
+        });
+
+        if (scrollBottom) {
+          setTimeout(() => {
+            chatHistorico.scrollTo({
+              top: chatHistorico.scrollHeight,
+              behavior: "smooth"
+            });
+          }, 0);
+        }
+      }
+
+      async function enviarMensagem() {
+        if (!atendimentoSelecionadoId) {
+          showToast("Atenção", "Selecione um atendimento.", "warn");
+          return;
+        }
+
+        const texto = chatMensagem.value.trim();
+        if (!texto) {
+          showToast("Atenção", "Digite uma mensagem.", "warn");
+          return;
+        }
+
+        try {
+          await api("/api/mensagens", {
+            method: "POST",
+            body: JSON.stringify({
+              atendimento_id: atendimentoSelecionadoId,
+              empresa_id: 1,
+              tipo: "texto",
+              conteudo: texto,
+              origem: "atendente"
+            })
+          });
+
+          chatMensagem.value = "";
+          await abrirChatPorId(atendimentoSelecionadoId, true);
+          await carregar();
+        } catch (e) {
+          showToast("Erro", e.message, "bad");
+        }
+      }
+
+      async function criarAtendimento() {
+        const nomeCliente = cliente.value.trim();
+        const msgInicial = mensagem.value.trim();
+
+        if (!nomeCliente || !msgInicial) {
+          showToast("Atenção", "Preencha cliente e mensagem.", "warn");
+          return;
+        }
+
+        try {
+          await api("/webhooks/in", {
+            method: "POST",
+            body: JSON.stringify({
+              empresa_id: 1,
+              canal: "WhatsApp1",
+              cliente: nomeCliente,
+              telefone: null,
+              mensagem: msgInicial,
+              origem: "cliente",
+              tipo: "texto"
+            })
+          });
+
+          cliente.value = "";
+          mensagem.value = "";
+          await carregar();
+          showToast("OK", "Atendimento criado.");
+        } catch (e) {
+          showToast("Erro", e.message, "bad");
+        }
+      }
+
+      function abrirDrawer() {
+        if (!atendimentoSelecionadoId) {
+          showToast("Atenção", "Selecione um atendimento antes de gerar orçamento.", "warn");
+          return;
+        }
+        drawer.classList.remove("hidden");
+        drawerBackdrop.classList.remove("hidden");
+      }
+
+      function fecharDrawer() {
+        drawer.classList.add("hidden");
+        drawerBackdrop.classList.add("hidden");
+      }
+
+      function preencherDrawer(atendimento) {
+        if (!atendimento) {
+          orcClienteInfo.textContent = "Cliente: -";
+          return;
+        }
+        orcClienteInfo.textContent = `Cliente: ${atendimento?.cliente?.nome || "-"}`;
+      }
+
+      function atualizarVariacoes() {
+        const produto = orcProdutoBase.value;
+        const lista = variacoesPorProduto[produto] || [];
+        orcVariacao.innerHTML = "";
+
+        if (!produto) {
+          orcVariacao.innerHTML = '<option value="">Selecione o produto base primeiro</option>';
+          return;
+        }
+
+        const first = document.createElement("option");
+        first.value = "";
+        first.textContent = "Selecione";
+        orcVariacao.appendChild(first);
+
+        lista.forEach(item => {
+          const opt = document.createElement("option");
+          opt.value = item.value;
+          opt.textContent = item.label;
+          orcVariacao.appendChild(opt);
+        });
+      }
+
+      function calcularOrcamento() {
+        const produto = orcProdutoBase.value;
+        const largura = parseFloat(orcLargura.value || 0);
+        const altura = parseFloat(orcAltura.value || 0);
+        const quantidade = parseInt(orcQuantidade.value || 1, 10);
+
+        if (!produto || !largura || !altura || !quantidade) {
+          showToast("Atenção", "Preencha produto, medidas e quantidade.", "warn");
+          return;
+        }
+
+        const area = largura * altura;
+        let custo = area * 20;
+
+        let valor = 0;
+        if (produto === "lona" || produto === "adesivo") {
+          valor = custo / 0.35;
+        } else {
+          valor = custo * 2.7;
+        }
+
+        valor = valor * quantidade;
+
+        if (valor < 10) valor = 10;
+        if (valor < 25) valor = 25;
+
+        orcValorFinal.textContent = formatMoney(valor);
+        orcPrazo.textContent = "2 dias úteis";
+      }
+
+      function aprovarOrcamento() {
+        showToast("Orçamento", "Estrutura visual pronta. Próximo passo: salvar no backend.", "ok");
+      }
+
+      async function finalizarAtendimentoSelecionado() {
+        if (!atendimentoSelecionadoId) {
+          showToast("Atenção", "Selecione um atendimento.", "warn");
+          return;
+        }
+
+        await api(`/api/atendimentos/${atendimentoSelecionadoId}/finalizar`, { method: "POST" });
+        await carregar();
+        await abrirChatPorId(atendimentoSelecionadoId, true);
+      }
+
+      btnLogin.addEventListener("click", doLogin);
+      btnLogout.addEventListener("click", doLogout);
+      btnCriar.addEventListener("click", criarAtendimento);
+      btnAtualizar.addEventListener("click", carregar);
+      btnAuto.addEventListener("click", toggleAuto);
+      btnEnviarChat.addEventListener("click", enviarMensagem);
+      btnOrcamento.addEventListener("click", abrirDrawer);
+      btnOrcamentoSide.addEventListener("click", abrirDrawer);
+      btnFecharDrawer.addEventListener("click", fecharDrawer);
+      drawerBackdrop.addEventListener("click", fecharDrawer);
+      btnCalcularOrcamento.addEventListener("click", calcularOrcamento);
+      btnAprovarOrcamento.addEventListener("click", aprovarOrcamento);
+      btnFinalizarTopo.addEventListener("click", finalizarAtendimentoSelecionado);
+      btnPedidoSide.addEventListener("click", () => showToast("Pedido", "Próximo passo: converter orçamento em pedido.", "ok"));
+      orcProdutoBase.addEventListener("change", atualizarVariacoes);
+
+      chatMensagem.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") enviarMensagem();
+      });
+
+      loginPass.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doLogin();
+      });
+
+      buscaCliente.addEventListener("input", (e) => {
+        buscaAtual = e.target.value || "";
+        renderLista(cacheAtendimentos);
+      });
+
+      filterTodos.addEventListener("click", () => setFiltro("todos"));
+      filterNao.addEventListener("click", () => setFiltro("nao_atendido"));
+      filterEm.addEventListener("click", () => setFiltro("em_atendimento"));
+      filterFin.addEventListener("click", () => setFiltro("finalizado"));
+
+      (async function boot() {
+        ME = await checkMe();
+        if (ME) startApp();
+      })();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+const path = require("path");
+const express = require("express");
+const session = require("express-session");
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "advir_super_sistema",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 8,
+    },
+  })
+);
+
+// arquivos estáticos (frontend)
+app.use(express.static(path.join(__dirname, "public")));
+
+// =========================
+// ROTAS
+// =========================
+const authRoutes = require("./routes/auth");
+const atendimentosRoutes = require("./routes/atendimentos");
+const mensagensRoutes = require("./routes/mensagens");
+const clientesRoutes = require("./routes/clientes");
+const webhooksRoutes = require("./routes/webhooks");
+
+// logs de diagnóstico
+console.log("authRoutes:", typeof authRoutes);
+console.log("atendimentosRoutes:", typeof atendimentosRoutes);
+console.log("mensagensRoutes:", typeof mensagensRoutes);
+console.log("clientesRoutes:", typeof clientesRoutes);
+console.log("webhooksRoutes:", typeof webhooksRoutes);
+
+// 🔐 autenticação
+app.use("/api/auth", authRoutes);
+
+// 💬 CRM
+app.use("/api/atendimentos", atendimentosRoutes);
+app.use("/api/mensagens", mensagensRoutes);
+app.use("/api/clientes", clientesRoutes);
+
+// 🤖 webhooks
+app.use("/webhooks", webhooksRoutes);
+
+// teste
+app.get("/api/teste", (req, res) => {
+  res.send("Servidor funcionando");
+});
+
+// fallback api
+app.use("/api", (req, res) => {
+  res.status(404).json({ erro: "Rota não encontrada" });
+});
+
+// front
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Operyx rodando na porta ${PORT}`);
+});
