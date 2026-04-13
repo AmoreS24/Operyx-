@@ -7,6 +7,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Importante para deploy atrás de proxy (Render)
+app.set("trust proxy", 1);
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "advir_super_sistema",
@@ -15,13 +18,13 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: "lax",
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 1000 * 60 * 60 * 8,
     },
   })
 );
 
-// arquivos estáticos (frontend)
+// arquivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
 
 // =========================
@@ -41,7 +44,12 @@ console.log("clientesRoutes:", typeof clientesRoutes);
 console.log("webhooksRoutes:", typeof webhooksRoutes);
 
 // 🔐 autenticação
-app.use("/api/auth", authRoutes);
+app.use("/api", authRoutes);
+// se seu arquivo routes/auth.js já tem /login, /logout e /me,
+// isso vira:
+// POST /api/login
+// POST /api/logout
+// GET  /api/me
 
 // 💬 CRM
 app.use("/api/atendimentos", atendimentosRoutes);
