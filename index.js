@@ -23,6 +23,7 @@ app.use(
     },
   })
 );
+<<<<<<< Updated upstream
 app.get('/teste-whatsapp', async (req, res) => {
   try {
     await enviarMensagem('5593991889055', 'Fala Erick 🚀 integração funcionando!');
@@ -31,6 +32,8 @@ app.get('/teste-whatsapp', async (req, res) => {
     res.status(500).send('Erro ao enviar WhatsApp');
   }
 });
+=======
+>>>>>>> Stashed changes
 
 // arquivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
@@ -75,6 +78,12 @@ app.get("/api/teste", (req, res) => {
 // fallback api
 app.use("/api", (req, res) => {
   res.status(404).json({ erro: "Rota não encontrada" });
+});
+
+// teste whatsapp
+app.get('/teste-whatsapp', async (req, res) => {
+  await enviarMensagem('5593992071492', 'Fala Erick 🚀 integração funcionando!');
+  res.send('Mensagem enviada!');
 });
 
 // front
