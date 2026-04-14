@@ -25,8 +25,8 @@ async function enviarMensagem(numero, mensagem) {
 
     console.log('Mensagem enviada:', response.data);
   } catch (error) {
-    console.error('Erro ao enviar mensagem:', error.response?.data || error.message);
-  }
+  console.error('Erro ao enviar mensagem:', error.response?.data || error.message);
+  throw error;
 }
 
 module.exports = { enviarMensagem };
