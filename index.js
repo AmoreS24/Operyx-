@@ -23,7 +23,10 @@ app.use(
     },
   })
 );
-
+app.get('/teste-whatsapp', async (req, res) => {
+  await enviarMensagem('5599999999999', 'Fala Erick 🚀 integração funcionando!');
+  res.send('Mensagem enviada!');
+});
 // arquivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
 
