@@ -1,4 +1,4 @@
-const path = require("path");
+const { enviarMensagem } = require('./src/services/whatsappService');const path = require("path");
 const express = require("express");
 const session = require("express-session");
 
