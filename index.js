@@ -7,6 +7,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/', require('./routes/webhooks'));
+
 // Importante para deploy atrás de proxy (Render)
 app.set("trust proxy", 1);
 
@@ -23,7 +25,6 @@ app.use(
     },
   })
 );
-<<<<<<< Updated upstream
 app.get('/teste-whatsapp', async (req, res) => {
   try {
     await enviarMensagem('5593991889055', 'Fala Erick 🚀 integração funcionando!');
@@ -32,8 +33,6 @@ app.get('/teste-whatsapp', async (req, res) => {
     res.status(500).send('Erro ao enviar WhatsApp');
   }
 });
-=======
->>>>>>> Stashed changes
 
 // arquivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
