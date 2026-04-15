@@ -10,6 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 // Importante para deploy atrás de proxy (Render)
 app.set("trust proxy", 1);
 
+app.use('/webhooks', webhooksRoutes);
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "advir_super_sistema",
