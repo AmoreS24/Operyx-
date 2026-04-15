@@ -1,60 +1,30 @@
-const express = require("express");
+const express = require('express');
+
 const router = express.Router();
 
-const atendimentosStore = require("../src/stores/atendimentos.store");
-const clientesStore = require("../src/stores/clientes.store");
-const mensagensStore = require("../src/stores/mensagens.store");
+const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'operyx_token_123';
 
-router.get("/in", (req, res) => {
-  const { canal, cliente, mensagem } = req.query;
+// Verificação do webhook pela Meta
+router.get('/meta/whatsapp', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
 
-  if (!cliente || !mensagem) {
-    return res.status(400).json({ erro: "cliente e mensagem obrigatórios" });
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('Webhook verificado com sucesso');
+    return res.status(200).send(challenge);
   }
 
-  const empresa_id = 1;
+  console.log('Falha na verificação do webhook');
+  return res.sendStatus(403);
+});
 
-  // 1. Buscar ou criar cliente
-  let clienteExistente = clientesStore.buscarPorNome(cliente, empresa_id);
+// Recebimento de eventos da Meta
+router.post('/meta/whatsapp', (req, res) => {
+  console.log('Evento recebido do WhatsApp:');
+  console.dir(req.body, { depth: null });
 
-  if (!clienteExistente) {
-    clienteExistente = clientesStore.criar({
-      nome: cliente,
-      empresa_id,
-    });
-  }
-
-  // 2. Buscar atendimento em aberto
-  let atendimento = atendimentosStore.buscarEmAbertoPorCliente(
-    clienteExistente.id,
-    empresa_id
-  );
-
-  // 3. Se não existir, criar atendimento
-  if (!atendimento) {
-    atendimento = atendimentosStore.criar({
-      cliente_id: clienteExistente.id,
-      empresa_id,
-      canal: canal || "WhatsApp1",
-      status: "nao_atendido",
-    });
-  }
-
-  // 4. Criar mensagem
-  mensagensStore.criar({
-    empresa_id,
-    atendimento_id: atendimento.id,
-    tipo: "texto",
-    conteudo: mensagem,
-    origem: "cliente",
-  });
-
-  // 5. Atualizar última mensagem
-  atendimentosStore.tocarMensagem(atendimento.id);
-
-  console.log("Mensagem recebida:", cliente, mensagem);
-
-  res.json({ ok: true });
+  return res.sendStatus(200);
 });
 
 module.exports = router;
