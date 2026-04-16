@@ -1,13 +1,19 @@
-const { enviarMensagem } = require('./services/whatsappService');const path = require("path");
+const path = require("path");
 const express = require("express");
 const session = require("express-session");
+
+const { enviarMensagem } = require("./src/services/whatsappService");
+
+const authRoutes = require("./routes/auth");
+const atendimentosRoutes = require("./routes/atendimentos");
+const mensagensRoutes = require("./routes/mensagens");
+const clientesRoutes = require("./routes/clientes");
+const webhooksRoutes = require("./routes/webhooks");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use('/', require('./routes/webhooks'));
 
 // Importante para deploy atrás de proxy (Render)
 app.set("trust proxy", 1);
@@ -25,26 +31,6 @@ app.use(
     },
   })
 );
-app.get('/teste-whatsapp', async (req, res) => {
-  try {
-    await enviarMensagem('5593991889055', 'Fala Erick 🚀 integração funcionando!');
-    res.send('Mensagem enviada!');
-  } catch (error) {
-    res.status(500).send('Erro ao enviar WhatsApp');
-  }
-});
-
-// arquivos estáticos
-app.use(express.static(path.join(__dirname, "public")));
-
-// =========================
-// ROTAS
-// =========================
-const authRoutes = require("./routes/auth");
-const atendimentosRoutes = require("./routes/atendimentos");
-const mensagensRoutes = require("./routes/mensagens");
-const clientesRoutes = require("./routes/clientes");
-const webhooksRoutes = require("./routes/webhooks");
 
 // logs de diagnóstico
 console.log("authRoutes:", typeof authRoutes);
@@ -53,25 +39,33 @@ console.log("mensagensRoutes:", typeof mensagensRoutes);
 console.log("clientesRoutes:", typeof clientesRoutes);
 console.log("webhooksRoutes:", typeof webhooksRoutes);
 
-// 🔐 autenticação
-app.use("/api", authRoutes);
-// se seu arquivo routes/auth.js já tem /login, /logout e /me,
-// isso vira:
-// POST /api/login
-// POST /api/logout
-// GET  /api/me
+// webhook
+// Se no webhooks.js a rota for router.get('/webhook') e router.post('/webhook'),
+// então aqui deve ficar apenas "/"
+app.use("/", webhooksRoutes);
 
-// 💬 CRM
+// autenticação
+app.use("/api", authRoutes);
+
+// CRM
 app.use("/api/atendimentos", atendimentosRoutes);
 app.use("/api/mensagens", mensagensRoutes);
 app.use("/api/clientes", clientesRoutes);
 
-// 🤖 webhooks
-app.use("/webhooks", webhooksRoutes);
-
-// teste
+// teste api
 app.get("/api/teste", (req, res) => {
   res.send("Servidor funcionando");
+});
+
+// teste whatsapp
+app.get("/teste-whatsapp", async (req, res) => {
+  try {
+    await enviarMensagem("5593991889055", "Fala Erick 🚀 integração funcionando!");
+    res.send("Mensagem enviada!");
+  } catch (error) {
+    console.error("Erro no teste-whatsapp:", error.response?.data || error.message);
+    res.status(500).send("Erro ao enviar WhatsApp");
+  }
 });
 
 // fallback api
@@ -79,11 +73,8 @@ app.use("/api", (req, res) => {
   res.status(404).json({ erro: "Rota não encontrada" });
 });
 
-// teste whatsapp
-app.get('/teste-whatsapp', async (req, res) => {
-  await enviarMensagem('5593992071492', 'Fala Erick 🚀 integração funcionando!');
-  res.send('Mensagem enviada!');
-});
+// arquivos estáticos
+app.use(express.static(path.join(__dirname, "public")));
 
 // front
 app.use((req, res) => {
@@ -93,5 +84,5 @@ app.use((req, res) => {
 // server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Operyx rodando na porta ${PORT}`);
+  console.log('🚀 Operyx rodando na porta ${PORT}');
 });
