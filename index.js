@@ -1,6 +1,14 @@
-const { enviarMensagem } = require('./src/services/whatsappService');const path = require("path");
+const { enviarMensagem } = require('./src/services/whatsappService');
+const path = require("path");
 const express = require("express");
 const session = require("express-session");
+
+// ROTAS
+const authRoutes = require("./routes/auth");
+const atendimentosRoutes = require("./routes/atendimentos");
+const mensagensRoutes = require("./routes/mensagens");
+const clientesRoutes = require("./routes/clientes");
+const webhooksRoutes = require("./routes/webhooks");
 
 const app = express();
 
@@ -10,7 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 // Importante para deploy atrás de proxy (Render)
 app.set("trust proxy", 1);
 
-app.use('/webhooks', webhooksRoutes);
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "advir_super_sistema",
@@ -24,24 +31,6 @@ app.use(
     },
   })
 );
-app.get('/teste-whatsapp', async (req, res) => {
-  try {
-    await enviarMensagem('5593991889055', 'Fala Erick 🚀 integração funcionando!');
-    res.send('Mensagem enviada!');
-  } catch (error) {
-    res.status(500).send('Erro ao enviar WhatsApp');
-  }
-});
-
-// arquivos estáticos
-app.use(express.static(path.join(__dirname, "public")));
-
-// ROTAS
-const authRoutes = require("./routes/auth");
-const atendimentosRoutes = require("./routes/atendimentos");
-const mensagensRoutes = require("./routes/mensagens");
-const clientesRoutes = require("./routes/clientes");
-const webhooksRoutes = require("./routes/webhooks");
 
 // logs de diagnóstico
 console.log("authRoutes:", typeof authRoutes);
@@ -50,13 +39,11 @@ console.log("mensagensRoutes:", typeof mensagensRoutes);
 console.log("clientesRoutes:", typeof clientesRoutes);
 console.log("webhooksRoutes:", typeof webhooksRoutes);
 
+// arquivos estáticos
+app.use(express.static(path.join(__dirname, "public")));
+
 // 🔐 autenticação
 app.use("/api", authRoutes);
-// se seu arquivo routes/auth.js já tem /login, /logout e /me,
-// isso vira:
-// POST /api/login
-// POST /api/logout
-// GET  /api/me
 
 // 💬 CRM
 app.use("/api/atendimentos", atendimentosRoutes);
@@ -66,9 +53,20 @@ app.use("/api/clientes", clientesRoutes);
 // 🤖 webhooks
 app.use("/webhooks", webhooksRoutes);
 
-// teste
+// teste API
 app.get("/api/teste", (req, res) => {
   res.send("Servidor funcionando");
+});
+
+// teste WhatsApp
+app.get("/teste-whatsapp", async (req, res) => {
+  try {
+    await enviarMensagem("5593991889055", "Fala Erick 🚀 integração funcionando!");
+    res.send("Mensagem enviada!");
+  } catch (error) {
+    console.error("Erro no teste-whatsapp:", error.response?.data || error.message);
+    res.status(500).send("Erro ao enviar WhatsApp");
+  }
 });
 
 // fallback api
@@ -85,3 +83,4 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Operyx rodando na porta ${PORT}`);
+});
