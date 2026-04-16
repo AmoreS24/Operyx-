@@ -36,9 +36,7 @@ app.get('/teste-whatsapp', async (req, res) => {
 // arquivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
 
-// =========================
 // ROTAS
-// =========================
 const authRoutes = require("./routes/auth");
 const atendimentosRoutes = require("./routes/atendimentos");
 const mensagensRoutes = require("./routes/mensagens");
@@ -87,4 +85,3 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Operyx rodando na porta ${PORT}`);
-});
