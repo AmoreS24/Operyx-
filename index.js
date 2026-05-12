@@ -60,11 +60,19 @@ app.get("/api/teste", (req, res) => {
 // teste whatsapp
 app.get("/teste-whatsapp", async (req, res) => {
   try {
-    await enviarMensagem("5593991889055", "Fala Erick 🚀 integração funcionando!");
-    res.send("Mensagem enviada!");
+    const resultado = await enviarMensagem(
+      "5593991889055",
+      "Teste Operyx funcionando 🚀"
+    );
+
+    res.send("Mensagem enviada com sucesso: " + JSON.stringify(resultado));
   } catch (error) {
-    console.error("Erro no teste-whatsapp:", error.response?.data || error.message);
-    res.status(500).send("Erro ao enviar WhatsApp");
+    console.error("Erro real no teste:", error.response?.data || error.message);
+
+    res.status(500).send(
+      "Erro ao enviar mensagem: " +
+      JSON.stringify(error.response?.data || error.message)
+    );
   }
 });
 
