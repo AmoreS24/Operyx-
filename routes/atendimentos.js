@@ -13,12 +13,12 @@ router.get("/", (req, res) => {
     const resultado = lista.map((atendimento) => {
       const cliente = clientesStore.buscarPorId(atendimento.cliente_id);
       const mensagens = mensagensStore.listarPorAtendimento(atendimento.id);
-      const ultimaMensagem = mensagens.length ? mensagens[mensagens.length - 1] : null;
+      const ultima_Mensagem = mensagens.length ? mensagens[mensagens.length - 1] : null;
 
       return {
         ...atendimento,
         cliente,
-        ultimaMensagem,
+        ultima_Mensagem,
       };
     });
 
