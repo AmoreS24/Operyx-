@@ -19,31 +19,55 @@ router.get("/webhook", (req, res) => {
 });
 
 router.post("/webhook", (req, res) => {
-  console.log(
-    "Mensagem recebida:",
-    JSON.stringify(req.body, null, 2)
-  );
+  console.log("Mensagem recebida do WhatsApp:", JSON.stringify(req.body, null, 2));
 
   try {
-    const message =
-      req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    const value = req.body.entry?.[0]?.changes?.[0]?.value;
+    const message = value?.messages?.[0];
+    const contact = value?.contacts?.[0];
 
-    if (message) {
-      const numero = message.from;
-      const texto = message.text?.body || "Mensagem";
-
-      const novoAtendimento = {
-        id: Date.now(),
-        cliente: numero,
-        mensagem: texto,
-        status: "nao_atendido"
-      };
-
-      atendimentos.push(novoAtendimento);
-
-      console.log("Novo atendimento criado:", novoAtendimento);
+    if (!message) {
+      return res.sendStatus(200);
     }
 
+    const numero = message.from;
+    const nome = contact?.profile?.name || numero;
+    const texto = message.text?.body || "";
+    const agora = new Date().toISOString();
+
+    let atendimento = atendimentos.find(
+      (item) => item.numero === numero && item.status !== "finalizado"
+    );
+
+    if (!atendimento) {
+      atendimento = {
+        id: Date.now().toString(),
+        cliente: nome,
+        nome,
+        numero,
+        status: "nao_atendido",
+        origem: "whatsapp",
+        tags: ["Triagem"],
+        mensagens: [],
+        criadoEm: agora,
+        atualizadoEm: agora
+      };
+
+      atendimentos.unshift(atendimento);
+    }
+
+    atendimento.mensagens.push({
+      id: message.id || Date.now().toString(),
+      origem: "cliente",
+      texto,
+      data: agora
+    });
+
+    atendimento.mensagem = texto;
+    atendimento.ultimaMensagem = texto;
+    atendimento.atualizadoEm = agora;
+
+    console.log("Atendimento atualizado:", atendimento);
   } catch (err) {
     console.log("Erro ao processar webhook:", err);
   }
