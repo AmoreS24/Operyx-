@@ -1124,10 +1124,12 @@
         div.className = "conversation-item";
         if (a.id === atendimentoSelecionadoId) div.classList.add("active");
 
-        const clienteNome = a?.cliente?.nome || "Cliente";
-        const preview = a?.ultimaMensagem?.conteudo || "Sem mensagens";
-        const hora = a?.ultimaMensagem?.created_at ? formatHora(a.ultimaMensagem.created_at) : "";
-        const atendente = a.atendente_nome || "-";
+const clienteNome = a?.cliente_nome || a?.nome || a?.numero || "Cliente";        
+const preview = a?.ultima_mensagem || "Sem mensagens";
+const hora = a?.updated_at
+  ? formatHora(a.updated_at)
+  : "";
+          const atendente = a.atendente_nome || "-";
 
         div.innerHTML = `
           <div class="conv-top">
