@@ -1075,9 +1075,6 @@
       async function carregar() {
         try {
           const listaApi = await api("/api/atendimentos");
-const listaWhatsapp = await api("/lista");
-
-const lista = [...listaApi, ...listaWhatsapp];
           cacheAtendimentos = lista;
           renderLista(lista);
 
