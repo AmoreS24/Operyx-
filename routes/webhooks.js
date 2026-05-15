@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const atendimentos = [];
+const atendimentosStore = require("../src/stores/atendimentos.store");
+const mensagensStore = require("../src/stores/mensagens.store");
 
 router.get("/webhook", (req, res) => {
   const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
@@ -33,41 +34,55 @@ router.post("/webhook", (req, res) => {
     const numero = message.from;
     const nome = contact?.profile?.name || numero;
     const texto = message.text?.body || "";
-    const agora = new Date().toISOString();
+    const messageId = message.id || String(Date.now());
 
-    let atendimento = atendimentos.find(
-      (item) => item.numero === numero && item.status !== "finalizado"
-    );
+    let atendimento = atendimentosStore.buscarPorCanalExternoId(numero);
 
     if (!atendimento) {
-      atendimento = {
-        id: Date.now().toString(),
-        cliente: nome,
-        nome,
-        numero,
+      atendimento = atendimentosStore.criar({
+        empresa_id: 1,
+        cliente_id: null,
+        canal: "WhatsApp1",
+        canal_externo_id: numero,
         status: "nao_atendido",
-        origem: "whatsapp",
-        tags: ["Triagem"],
-        mensagens: [],
-        criadoEm: agora,
-        atualizadoEm: agora
-      };
+        tag_ids: [],
+        atendente_id: null,
+        atendente_nome: null,
+      });
 
-      atendimentos.unshift(atendimento);
+      atendimento.cliente_nome = nome;
+      atendimento.cliente = nome;
+      atendimento.numero = numero;
+      atendimento.origem = "whatsapp";
+      atendimento.tags = ["Triagem"];
     }
 
-    atendimento.mensagens.push({
-      id: message.id || Date.now().toString(),
+    const novaMensagem = mensagensStore.criar({
+      atendimento_id: atendimento.id,
+      direcao: "entrada",
       origem: "cliente",
+      tipo: "texto",
       texto,
-      data: agora
+      conteudo: texto,
+      canal: "WhatsApp1",
+      canal_message_id: messageId,
+      remetente_nome: nome,
+      remetente_numero: numero,
+      status: "recebida",
     });
 
-    atendimento.mensagem = texto;
-    atendimento.ultimaMensagem = texto;
-    atendimento.atualizadoEm = agora;
+    atendimentosStore.atualizar(atendimento.id, {
+      cliente_nome: nome,
+      cliente: nome,
+      numero,
+      ultima_mensagem: texto,
+      ultimaMensagem: texto,
+      mensagem: texto,
+      last_message_at: new Date(),
+    });
 
-    console.log("Atendimento atualizado:", atendimento);
+    console.log("Atendimento oficial atualizado:", atendimento);
+    console.log("Mensagem oficial criada:", novaMensagem);
   } catch (err) {
     console.log("Erro ao processar webhook:", err);
   }
@@ -76,7 +91,7 @@ router.post("/webhook", (req, res) => {
 });
 
 router.get("/lista", (req, res) => {
-  return res.json(atendimentos);
+  return res.json(atendimentosStore.listar());
 });
 
 module.exports = router;
