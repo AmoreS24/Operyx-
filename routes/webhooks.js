@@ -76,7 +76,7 @@ router.post("/webhook", (req, res) => {
       cliente: nome,
       numero,
       ultima_mensagem: texto,
-      ultimaMensagem: texto,
+      ultima_Mensagem: texto,
       mensagem: texto,
       last_message_at: new Date(),
     });
