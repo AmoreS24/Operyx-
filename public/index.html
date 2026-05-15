@@ -1119,10 +1119,18 @@
         filtrada.forEach(a => listaConversas.appendChild(cardAtendimento(a)));
       }
 
-      function cardAtendimento(a) {
-        const div = document.createElement("div");
-        div.className = "conversation-item";
-        if (a.id === atendimentoSelecionadoId) div.classList.add("active");
+function cardAtendimento(a) {
+  const div = document.createElement("div");
+
+  div.innerHTML = `
+    <div style="padding:10px; border:1px solid #ccc; margin-bottom:10px;">
+      <strong>${a.cliente_nome}</strong><br>
+      ${a.ultima_mensagem}
+    </div>
+  `;
+
+  return div;
+}
 
 const clienteNome = a?.cliente_nome || a?.nome || a?.numero || "Cliente";        
 const preview = a?.ultima_mensagem || "Sem mensagens";
